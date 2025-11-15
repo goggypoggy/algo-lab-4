@@ -102,13 +102,13 @@ struct dequeue {
 int depth = 0;
 
 int check(dequeue* A, dequeue* B, int prev) {
-    std::cout << "--- " << depth << " ---------------------\n";
-    std::cout << "A: ";
-    A->output();
-    std::cout << "B: ";
-    B->output();
-    std::cout << "prev: " << prev << std::endl;
-    std::cout << "------------------------\n";
+    // std::cout << "--- " << depth << " ---------------------\n";
+    // std::cout << "A: ";
+    // A->output();
+    // std::cout << "B: ";
+    // B->output();
+    // std::cout << "prev: " << prev << std::endl;
+    // std::cout << "------------------------\n";
 
     
     if (A->empty() || B->empty()) {
@@ -123,7 +123,7 @@ int check(dequeue* A, dequeue* B, int prev) {
         B->pop_start();
         prev++;
         int M = check(A, B, prev);
-        std::cout << "depth " << depth << " M->" << M << std::endl;
+        // std::cout << "depth " << depth << " M->" << M << std::endl;
         A->push_start(extra);
         B->push_start(extra);
         prev--;
@@ -136,7 +136,7 @@ int check(dequeue* A, dequeue* B, int prev) {
         int x = A->pop_start();
         depth++;
         L = check(A, B, prev);
-        std::cout << "depth " << depth << " L->" << L << std::endl;
+        // std::cout << "depth " << depth << " L->" << L << std::endl;
         depth--;
         A->push_start(x);
     } 
@@ -146,7 +146,7 @@ int check(dequeue* A, dequeue* B, int prev) {
         int x = B->pop_start();
         depth++;
         R = check(A, B, prev);
-        std::cout << "depth " << depth << " R->" << R << std::endl;
+        //std::cout << "depth " << depth << " R->" << R << std::endl;
         depth--;
         B->push_start(x);   
     }
