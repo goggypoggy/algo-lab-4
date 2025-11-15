@@ -196,21 +196,6 @@ struct vector {
 };
 
 int main(int, char**) {
-    vector<pair> V;
-    V.add({1, 2});
-    V.add({3, 2});
-    V.add({1, 5});
-    V.add({4, 2});
-    V.add({4, 1});
-    V.add({2, 6});
-    V.add({2, 1});
-    V.add({3, -4});
-
-    V.output();
-    std::cout << V.is_in({3, 2});
-    std::cout << V.is_in({3, 5});
-    std::cout << V.is_in({1, 5});
-    /*
     int n;
     int m;
 
@@ -218,14 +203,13 @@ int main(int, char**) {
 
     int maxMask = pow(3, n);
 
-    int** d = new int*[maxMask];
-    for (int i = 0; i < maxMask; ++i) {
-        d[i] = new int[maxMask];
-    }
+    vector<pair> d;
 
     for (int i = 0; i < maxMask; ++i) {
         for (int j = 0; j < maxMask; ++j) {
-            d[i][j] = can_go_from_L_to_R(i, j, n);
+            if (can_go_from_L_to_R(i, j, n)) {
+                d.add({i, j});
+            }
         }
     }
 
@@ -235,14 +219,14 @@ int main(int, char**) {
     }
 
     for (int p = 0; p < maxMask; ++p) {
-        A[1][p] = d[0][p];
+        A[1][p] = d.is_in({0, p});
     }
 
     for (int i = 2; i <= m; ++i) {
         for (int p = 0; p < maxMask; ++p) {
             A[i][p] = 0;
             for (int j = 0; j < maxMask; ++j) {
-                A[i][p] += A[i - 1][j] * d[j][p];
+                A[i][p] += A[i - 1][j] * d.is_in({j, p});
             }
         }
     }
@@ -253,11 +237,6 @@ int main(int, char**) {
         delete[] A[i];
     }
     delete[] A;
-
-    for (int i = 0; i < maxMask; ++i) {
-        delete[] d[i];
-    }
-    delete[] d;
-    */
+    
     return 0;
 }
