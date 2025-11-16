@@ -58,13 +58,13 @@ bool can_go_from_L_to_R(int L, int R, int n) {
     return true;
 }
 
-
+template<typename T1, typename T2>
 struct pair {
-    int left = 0;
-    int right = 0;
+    T1 left;
+    T2 right;
 };
 
-bool operator<(const pair& lhs, const pair& rhs) {
+bool operator<(const pair<int, int>& lhs, const pair<int, int>& rhs) {
     if (lhs.left < rhs.left) {
         return true;
     } else if (lhs.left == rhs.left) {
@@ -74,11 +74,11 @@ bool operator<(const pair& lhs, const pair& rhs) {
     }
 }
 
-bool operator==(const pair& lhs, const pair& rhs) {
+bool operator==(const pair<int, int>& lhs, const pair<int, int>& rhs) {
     return lhs.left == rhs.left && lhs.right == rhs.right;
 }
 
-std::ostream& operator<<(std::ostream& stream, const pair& x) {
+std::ostream& operator<<(std::ostream& stream, const pair<int, int>& x) {
     stream << "{" << x.left << ":" << x.right << "}";
     return stream;
 }
@@ -94,11 +94,40 @@ struct vector {
        mem(new T[10])
     {}
 
+    vector(const vector<T>& V)
+     : size(V.size), capacity(V.capacity),
+       mem(new T[V.capacity])
+    {
+        for (int i = 0; i < size; ++i) {
+            mem[i] = V.mem[i];
+        }        
+    }
+
+    vector<T>& operator=(const vector<T>& V) {
+        if (this == &V) {
+            return *this;
+        }
+
+        delete[] mem;
+        size = V.size;
+        capacity = V.capacity;
+
+        mem = new T[capacity];
+        for (int i = 0; i < size; ++i) {
+            mem[i] = V.mem[i];
+        }
+
+        return *this;
+    }
+
     ~vector() {
         delete[] mem;
     }
 
-    
+    T& operator[](int i) {
+        return mem[i];
+    }
+
     void add(const T& x) {
         if (size == capacity) {
             increaseCapacity();
@@ -117,6 +146,11 @@ struct vector {
     }
     
     void output() {
+        if (size == 0) {
+            std::cout << "none\n";
+            return;
+        }
+
         for (int i = 0; i < size; ++i) {
             std::cout << mem[i] << (i == size - 1 ? "\n" : " ");
         }
@@ -201,32 +235,50 @@ int main(int, char**) {
 
     std::cin >> n >> m;
 
+    if (m < 3) {
+        std::cout << (n % 3 == 0 ? 1 : 0);
+    }
+
     int maxMask = pow(3, n);
 
-    vector<pair> d;
+    vector<vector<int>> d;
 
     for (int i = 0; i < maxMask; ++i) {
+        vector<int> connections;
         for (int j = 0; j < maxMask; ++j) {
             if (can_go_from_L_to_R(i, j, n)) {
-                d.add({i, j});
+                connections.add(j);
             }
         }
+        d.add(connections);
     }
 
-    int** A = new int*[m + 1];
+    /*
+    for (int i = 0; i < d.size; ++i) {
+        std::cout << i << ": ";
+        d[i].output();
+    }
+    */
+
+    int64_t** A = new int64_t*[m + 1];
     for (int i = 0; i <= m; ++i) {
-        A[i] = new int[maxMask];
+        A[i] = new int64_t[maxMask];
+        memset(A[i], 0, sizeof(int64_t) * maxMask);
+    }
+    
+    for (int k = 0; k < d[0].size; ++k) {
+        A[1][d[0][k]] = 1;
     }
 
-    for (int p = 0; p < maxMask; ++p) {
-        A[1][p] = d.is_in({0, p});
-    }
-
-    for (int i = 2; i <= m; ++i) {
-        for (int p = 0; p < maxMask; ++p) {
-            A[i][p] = 0;
-            for (int j = 0; j < maxMask; ++j) {
-                A[i][p] += A[i - 1][j] * d.is_in({j, p});
+    for (int i = 1; i < m; ++i) {
+        for (int j = 0; j < maxMask; ++j) {
+            /*
+            for (int k = 0; k < d[j].size; ++k) {
+                int p = d[j][k];
+                A[i + 1][p] += A[i][j];
+            }*/
+            for (int p = 0; p < maxMask; ++p) {
+                A[i + 1][p] += A[i][j] * (d[j].is_in(p) ? 1 : 0);
             }
         }
     }
@@ -237,6 +289,6 @@ int main(int, char**) {
         delete[] A[i];
     }
     delete[] A;
-    
+
     return 0;
 }
