@@ -12,21 +12,75 @@ int pow(int base, int exp) {
     return result;
 }
 
-void from_num_to_mask(int x, char* mask, int n) {
-    for (int i = 0; i < n; ++i) {
+struct string {
+    int length = 0;
+    char* c;
+    
+    string(int len)
+    : length(len), c(new char[len])
+    {}
+
+    string(const string& s)
+    : length(s.length), c(new char[s.length])
+    {
+        memcpy(c, s.c, length);
+    }
+
+    string& operator=(const string& s) {
+        if (this == &s) {
+            return *this;
+        }
+
+        delete[] c;
+
+        length = s.length;
+        c = new char[length];
+
+        memcpy(c, s.c, length);
+
+        return *this;
+    }
+
+    ~string() {
+        delete[] c;
+    }
+
+    char& operator[](int i) {
+        return c[i];
+    }
+
+    const char& operator[](int i) const {
+        return c[i];
+    }
+
+    void clear() {
+        memset(c, 0, length);
+    }
+};
+
+std::ostream& operator<<(std::ostream& stream, const string& s) {
+    for (int i = 0; i < s.length; ++i) {
+        stream << s[i];
+    }
+    return stream;
+}
+
+string& from_num_to_mask(int x, string& mask) {
+    for (int i = 0; i < mask.length; ++i) {
         int r = x % 3;
         x /= 3;
         mask[i] = r + '0';
     }
-    mask[n] = 0;
+
+    return mask;
 }
 
 bool can_go_from_L_to_R(int L, int R, int n) {
-    char* Lmask = new char[n + 1];
-    char* Rmask = new char[n + 1];
+    static string Lmask(n + 1);
+    static string Rmask(n + 1);
 
-    from_num_to_mask(L, Lmask, n);
-    from_num_to_mask(R, Rmask, n);
+    from_num_to_mask(L, Lmask);
+    from_num_to_mask(R, Rmask);
 
     int len = 0;
     for (int i = 0; i < n; ++i) {
@@ -50,10 +104,8 @@ bool can_go_from_L_to_R(int L, int R, int n) {
         return false;
     }
 
-    //std::cout << Lmask << " " << Rmask << "\n";
-
-    delete[] Lmask;
-    delete[] Rmask;
+    Lmask.clear();
+    Rmask.clear();
 
     return true;
 }
@@ -237,6 +289,57 @@ struct vector {
     }
 };
 
+int from_mask_to_num(string& mask) {
+    int result = 0;
+    int three = 1;
+
+    for (int i = 0; i < mask.length; ++i) {
+        result += three * (mask[i] - '0');
+        three *= 3;    
+    }
+
+    return result;
+}
+
+void resolveV(string& mask, vector<int>& connections) {
+    string resolvedMask = mask;
+    
+    int len = 0;
+    for (int i = 0; i < mask.length; ++i) {
+        if (mask[i] == 'V') {
+            len++;
+            resolvedMask[i] = '2';
+            if (len >= 3) {
+                string zeroVariant = resolvedMask;
+                zeroVariant[i] = zeroVariant[i - 1] = zeroVariant[i - 2] = '0';
+
+                resolveV(zeroVariant, connections);
+            }
+        } else {
+            len = 0;
+        }
+    }
+
+    connections.add(from_mask_to_num(resolvedMask));
+}
+
+void addPossibleConnections(int start, vector<int>& connections, int n) {
+    string Lmask(n);
+    from_num_to_mask(start, Lmask);
+
+    string Rmask(n);
+
+    for (int i = 0; i < n; ++i) {
+        if (Lmask[i] == '0') {
+            Rmask[i] = 'V';
+        } else {
+            Rmask[i] = Lmask[i] - 1;
+        }
+    }
+
+    resolveV(Rmask, connections);
+}
+
 int main(int, char**) {
     int n;
     int m;
@@ -254,22 +357,22 @@ int main(int, char**) {
 
     for (int i = 0; i < maxMask; ++i) {
         vector<int> connections;
-        for (int j = 0; j < maxMask; ++j) {
-            if (can_go_from_L_to_R(i, j, n)) {
-                connections.add(j);
-            }
-        }
+        addPossibleConnections(i, connections, n);
         d.add(connections);
     }
 
     /*
     for (int i = 0; i < d.size; ++i) {
-        std::cout << i << ": ";
-        d[i].output();
+        string s(n);
+        std::cout << from_num_to_mask(i, s) << ": ";
+        for (int k = 0; k < d[i].size; ++k) {
+            int j = d[i][k];
+            std::cout << from_num_to_mask(j, s) << (k == d[i].size - 1 ? "" : ", ");
+        }
+        std::cout << std::endl;
     }
     */
     
-
     int64_t** A = new int64_t*[m + 1];
     for (int i = 0; i <= m; ++i) {
         A[i] = new int64_t[maxMask];

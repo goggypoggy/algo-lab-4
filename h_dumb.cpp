@@ -74,9 +74,9 @@ int main(int, char**) {
         }
     }
 
-    int** A = new int*[m + 1];
+    int64_t** A = new int64_t*[m + 1];
     for (int i = 0; i <= m; ++i) {
-        A[i] = new int[maxMask];
+        A[i] = new int64_t[maxMask];
     }
 
     for (int p = 0; p < maxMask; ++p) {
