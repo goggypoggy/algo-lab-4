@@ -1,8 +1,6 @@
 #include <iostream>
 #include <cstdlib>
 
-#define RAND_MAX 2147483647
-
 int pow(int base, int exp) {
     int result = 1;
     for (int i = 0; i < exp; ++i) {
@@ -75,66 +73,6 @@ string& from_num_to_mask(int x, string& mask) {
     return mask;
 }
 
-bool can_go_from_L_to_R(int L, int R, int n) {
-    static string Lmask(n + 1);
-    static string Rmask(n + 1);
-
-    from_num_to_mask(L, Lmask);
-    from_num_to_mask(R, Rmask);
-
-    int len = 0;
-    for (int i = 0; i < n; ++i) {
-        if (Lmask[i] == Rmask[i] && Lmask[i] == '0') {
-            len++;
-        } else {
-            if (len % 3 != 0) {
-                return false;
-            }
-            len = 0;
-            if (Lmask[i] == '0' && Rmask[i] == '2') {
-                continue;
-            }
-            if (Rmask[i] != Lmask[i] - 1) {
-                return false;
-            }
-        }
-    }
-
-    if (len % 3 != 0) {
-        return false;
-    }
-
-    Lmask.clear();
-    Rmask.clear();
-
-    return true;
-}
-
-template<typename T1, typename T2>
-struct pair {
-    T1 left;
-    T2 right;
-};
-
-bool operator<(const pair<int, int>& lhs, const pair<int, int>& rhs) {
-    if (lhs.left < rhs.left) {
-        return true;
-    } else if (lhs.left == rhs.left) {
-        return lhs.right < rhs.right;
-    } else {
-        return false;
-    }
-}
-
-bool operator==(const pair<int, int>& lhs, const pair<int, int>& rhs) {
-    return lhs.left == rhs.left && lhs.right == rhs.right;
-}
-
-std::ostream& operator<<(std::ostream& stream, const pair<int, int>& x) {
-    stream << "{" << x.left << ":" << x.right << "}";
-    return stream;
-}
-
 template<typename T>
 struct vector {
     int size = 0;
@@ -187,14 +125,6 @@ struct vector {
         
         mem[size] = x;
         size++;
-        sorted = false;
-    }
-    
-    void sort() {
-        if (!sorted) {
-            Partition(0, size);
-            sorted = true;
-        }
     }
     
     void output() {
@@ -208,26 +138,6 @@ struct vector {
         }
     }
 
-    bool is_in(const T& x) {
-        if (!sorted) {
-            sort();
-        }
-
-        int l = 0;
-        int r = size - 1;
-
-        while (l <= r) {
-            int m = (l + r) / 2;
-            if (mem[m] < x) {
-                l = m + 1;
-            } else {
-                r = m - 1;
-            }   
-        }
-
-        return mem[l] == x;
-    }
-
     void clear() {
         delete[] mem;
 
@@ -237,7 +147,6 @@ struct vector {
     }
 
     private:
-    bool sorted = false;
 
     void increaseCapacity() {
         capacity *= 2;
@@ -247,45 +156,6 @@ struct vector {
         }
         delete[] mem;
         mem = new_mem;
-    }
-
-    void Swap(T& a, T& b) {
-        T tmp = a;
-        a = b;
-        b = tmp;
-    }
-
-    int Rand(int min, int max) {
-        return min + (std::rand() % (max - min));
-    }
-
-    void Partition(int l, int r) {
-        T pivot = mem[Rand(l, r - 1)];
-        int i = l;
-        int j = r - 1;
-        
-        while (i <= j) {
-            while (mem[i] < pivot && i < r) {
-                i++;
-            }
-
-            while (pivot < mem[j] && j >= l) {
-                j--;
-            }
-
-            if (i <= j) {
-                Swap(mem[i], mem[j]);
-                i++;
-                j--;
-            }
-        }
-
-        if (l < j) {
-            Partition(l, j + 1);
-        }
-        if (i < r - 1) {
-            Partition(i, r);
-        }
     }
 };
 
