@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#define RAND_MAX INT_MAX
+#define RAND_MAX 2147483647
 
 int pow(int base, int exp) {
     int result = 1;
@@ -176,6 +176,14 @@ struct vector {
         return mem[l] == x;
     }
 
+    void clear() {
+        delete[] mem;
+
+        size = 0;
+        capacity = 10;
+        mem = new T[10];
+    }
+
     private:
     bool sorted = false;
 
@@ -237,6 +245,7 @@ int main(int, char**) {
 
     if (m < 3) {
         std::cout << (n % 3 == 0 ? 1 : 0);
+        return 0;
     }
 
     int maxMask = pow(3, n);
@@ -259,6 +268,7 @@ int main(int, char**) {
         d[i].output();
     }
     */
+    
 
     int64_t** A = new int64_t*[m + 1];
     for (int i = 0; i <= m; ++i) {
@@ -266,25 +276,39 @@ int main(int, char**) {
         memset(A[i], 0, sizeof(int64_t) * maxMask);
     }
     
+    vector<int> prevMasks;
+    vector<int> newMasks;
+
+    bool* added = new bool[maxMask];
+
     for (int k = 0; k < d[0].size; ++k) {
         A[1][d[0][k]] = 1;
+        prevMasks.add(d[0][k]);
     }
-
+    
     for (int i = 1; i < m; ++i) {
-        for (int j = 0; j < maxMask; ++j) {
-            /*
-            for (int k = 0; k < d[j].size; ++k) {
-                int p = d[j][k];
+        memset(added, 0, sizeof(bool) * maxMask);
+
+        for (int prev = 0; prev < prevMasks.size; ++prev) {
+            int j = prevMasks[prev];
+
+            for (int new_ = 0; new_ < d[j].size; ++new_) {
+                int p = d[j][new_];
                 A[i + 1][p] += A[i][j];
-            }*/
-            for (int p = 0; p < maxMask; ++p) {
-                A[i + 1][p] += A[i][j] * (d[j].is_in(p) ? 1 : 0);
+                if (!added[p]) {
+                    newMasks.add(p);
+                    added[p] = true;
+                }
             }
         }
+        
+        prevMasks = newMasks;
+        newMasks.clear();
     }
 
     std::cout << A[m][0];
-
+    
+    delete[] added;
     for (int i = 0; i <= m; ++i) {
         delete[] A[i];
     }
